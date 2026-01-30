@@ -20,6 +20,9 @@ The project aims to provide small to medium businesses with a comprehensive plat
 - **Linting**: ESLint for code quality
 
 ### Directory Structure
+
+**Note**: The following represents the intended directory structure as the project develops.
+
 ```
 /
 ├── .github/          # GitHub specific files and workflows
@@ -59,6 +62,8 @@ The project aims to provide small to medium businesses with a comprehensive plat
    - Follow OWASP security best practices
 
 ## Build, Test, and Deployment
+
+**Note**: The following commands represent the intended build and test setup. Implement these scripts in package.json as the project develops.
 
 ### Building the Project
 ```bash
@@ -157,7 +162,6 @@ Before submitting a PR:
 
 - [Project README](../README.md)
 - [License](../LICENSE)
-- [Contributing Guidelines](../CONTRIBUTING.md) (if available)
 
 ---
 
