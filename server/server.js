@@ -29,6 +29,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
+// Serve static files from client directory
+app.use(express.static(path.join(__dirname, '..', 'client')));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({

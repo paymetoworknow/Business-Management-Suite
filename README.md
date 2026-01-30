@@ -54,13 +54,16 @@ This creates the SQLite database and sets up the initial schema with a `ping_log
 npm run dev
 ```
 
-The server will start on `http://localhost:3000`.
+The server will start on `http://localhost:3000` and automatically serve the frontend application.
 
-### 4. Open the Test Application
+### 4. Access the Test Application
 
-Open `client/index.html` in your web browser. You can do this by:
-- Directly opening the file: `file:///path/to/Business-Management-Suite/client/index.html`
-- Or use a local web server if you prefer
+Open your web browser and navigate to:
+```
+http://localhost:3000
+```
+
+The frontend will automatically load and connect to the backend API.
 
 ## Available Endpoints
 
