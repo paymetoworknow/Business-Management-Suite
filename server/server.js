@@ -23,8 +23,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // Middleware
 app.use(express.json());
+// CORS configuration - allows all origins for development
+// TODO: In production, restrict to specific origins
 app.use(cors({
-  origin: '*', // Allow all origins for development (including file:// protocol)
+  origin: '*', // Allow all origins for development
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }));
@@ -46,6 +48,7 @@ app.get('/ping', (req, res) => {
   db.get('SELECT COUNT(*) as count FROM ping_log', (err, countRow) => {
     if (err) {
       console.error('Error getting ping count:', err.message);
+      console.error(err.stack);
       return res.status(500).json({ error: 'Database error' });
     }
 
@@ -53,6 +56,7 @@ app.get('/ping', (req, res) => {
     db.get('SELECT id, created_at FROM ping_log ORDER BY id DESC LIMIT 1', (err, lastRow) => {
       if (err) {
         console.error('Error getting last ping:', err.message);
+        console.error(err.stack);
         return res.status(500).json({ error: 'Database error' });
       }
 
@@ -72,6 +76,7 @@ app.post('/ping', (req, res) => {
   db.run('INSERT INTO ping_log (created_at) VALUES (CURRENT_TIMESTAMP)', function(err) {
     if (err) {
       console.error('Error inserting ping:', err.message);
+      console.error(err.stack);
       return res.status(500).json({ error: 'Database error' });
     }
 
@@ -79,6 +84,7 @@ app.post('/ping', (req, res) => {
     db.get('SELECT id, created_at FROM ping_log WHERE id = ?', [this.lastID], (err, row) => {
       if (err) {
         console.error('Error retrieving inserted ping:', err.message);
+        console.error(err.stack);
         return res.status(500).json({ error: 'Database error' });
       }
 

@@ -2,7 +2,8 @@
  * Business Management Suite - Test Application Client
  */
 
-const API_BASE_URL = 'http://localhost:3000';
+// Use relative URLs since client is served from the same server
+const API_BASE_URL = '';
 
 // DOM elements
 const healthStatus = document.getElementById('health-status');
