@@ -12,12 +12,12 @@ The project aims to provide small to medium businesses with a comprehensive plat
 
 ## Tech Stack & Conventions
 
-- **Runtime**: Node.js
-- **Primary Language**: JavaScript (TypeScript may be used for type safety)
-- **Package Manager**: npm or yarn
-- **Build Tools**: Standard Node.js ecosystem tools (Webpack, Vite, or similar)
-- **Testing**: Jest or similar testing frameworks
-- **Linting**: ESLint for code quality
+- **Runtime**: Python 3.x
+- **Primary Language**: Python
+- **Package Manager**: pip (or poetry for advanced dependency management)
+- **Build Tools**: Standard Python ecosystem tools
+- **Testing**: pytest or unittest
+- **Linting**: pylint, flake8, or black for code formatting
 
 ### Directory Structure
 
@@ -29,21 +29,22 @@ The project aims to provide small to medium businesses with a comprehensive plat
 ├── src/              # Source code
 ├── tests/            # Test files
 ├── docs/             # Documentation
-└── package.json      # Project dependencies and scripts
+├── requirements.txt  # Project dependencies
+└── app.py            # Main application entry point
 ```
 
 ## Coding Guidelines
 
 1. **Code Quality**
    - Write clean, readable, and maintainable code
-   - Follow ES6+ JavaScript standards
+   - Follow PEP 8 Python style guidelines
    - Use meaningful variable and function names
    - Keep functions small and focused on a single responsibility
 
-2. **TypeScript Usage** (if applicable)
-   - Avoid using `any` type; prefer explicit typing
-   - Use interfaces for object shapes
-   - Enable strict mode in tsconfig.json
+2. **Type Hints** (recommended)
+   - Use Python type hints for better code clarity
+   - Use typing module for complex types
+   - Consider using mypy for static type checking
 
 3. **Error Handling**
    - Always handle errors gracefully
@@ -51,7 +52,7 @@ The project aims to provide small to medium businesses with a comprehensive plat
    - Provide meaningful error messages
 
 4. **Documentation**
-   - Add JSDoc comments for public APIs and complex functions
+   - Use docstrings for modules, classes, and functions (Google or NumPy style)
    - Keep README.md up to date
    - Document any non-obvious business logic
 
@@ -63,31 +64,34 @@ The project aims to provide small to medium businesses with a comprehensive plat
 
 ## Build, Test, and Deployment
 
-**Note**: The following commands represent the intended build and test setup. Implement these scripts in package.json as the project develops.
+**Note**: The following commands represent the intended build and test setup. Implement these as the project develops.
 
-### Building the Project
+### Setting Up the Environment
 ```bash
-npm install          # Install dependencies
-npm run build        # Build the project
+python -m venv venv           # Create virtual environment
+source venv/bin/activate      # Activate on Linux/Mac
+# or
+venv\Scripts\activate         # Activate on Windows
+pip install -r requirements.txt  # Install dependencies
 ```
 
 ### Running Tests
 ```bash
-npm test             # Run all tests
-npm run test:unit    # Run unit tests
-npm run test:e2e     # Run end-to-end tests (if available)
+pytest                        # Run all tests
+pytest tests/unit/            # Run unit tests
+pytest tests/integration/     # Run integration tests (if available)
 ```
 
-### Linting
+### Linting and Formatting
 ```bash
-npm run lint         # Check code style
-npm run lint:fix     # Auto-fix linting issues
+pylint src/                   # Check code style
+flake8 src/                   # Additional linting
+black src/                    # Auto-format code
 ```
 
 ### Running the Application
 ```bash
-npm start            # Start the application
-npm run dev          # Start in development mode
+python app.py                 # Start the application
 ```
 
 ## Architecture and Design Patterns
