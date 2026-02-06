@@ -1,5 +1,11 @@
 # Business Management Suite - Copilot Instructions
 
+<!-- 
+  NOTE: This file is the single source of truth for GitHub Copilot instructions
+  for this repository. Do not duplicate this content elsewhere to avoid drift
+  and inconsistencies.
+-->
+
 ## Project Overview
 
 This is an all-in-one business management suite that provides:
