@@ -1,6 +1,8 @@
 """Minimal CLI app for test application."""
 
+
 def main() -> None:
+    """Run the test application."""
     print("test application")
 
 
