@@ -9,8 +9,34 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const DEFAULT_PORT = 3000;
 
+/**
+ * Resolve and validate the port from the environment.
+ * Falls back to the provided default port if the value is missing or invalid.
+ *
+ * @param {string|undefined} rawPort - The PORT environment variable value.
+ * @param {number} defaultPort - The default port to use when validation fails.
+ * @returns {number} - A valid port number.
+ */
+function resolvePort(rawPort, defaultPort) {
+  if (!rawPort) {
+    return defaultPort;
+  }
+
+  const parsedPort = Number.parseInt(rawPort, 10);
+
+  if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+    console.warn(
+      `Invalid PORT environment variable "${rawPort}". Falling back to default port ${defaultPort}.`
+    );
+    return defaultPort;
+  }
+
+  return parsedPort;
+}
+
+const PORT = resolvePort(process.env.PORT, DEFAULT_PORT);
 // Database setup
 const dbPath = path.join(__dirname, 'db', 'business.db');
 const db = new sqlite3.Database(dbPath, (err) => {
