@@ -45,8 +45,31 @@ const db = new sqlite3.Database(dbPath, (err) => {
     process.exit(1);
   }
   console.log('Connected to SQLite database');
+  ensureDatabaseSchema();
 });
 
+/**
+ * Ensure the required database schema exists.
+ * This creates the ping_log table if it does not already exist.
+ */
+function ensureDatabaseSchema() {
+  db.serialize(() => {
+    db.run(
+      `CREATE TABLE IF NOT EXISTS ping_log (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         created_at TEXT DEFAULT (datetime('now'))
+       )`,
+      (schemaErr) => {
+        if (schemaErr) {
+          console.error('Error ensuring database schema:', schemaErr.message);
+          console.error(schemaErr.stack);
+          process.exit(1);
+        }
+        console.log('Database schema verified');
+      }
+    );
+  });
+}
 // Middleware
 app.use(express.json());
 // CORS configuration - allows all origins for development
