@@ -1,0 +1,24 @@
+{
+  "name": "business-management-suite",
+  "version": "0.1.0",
+  "description": "All-in-one business management suite with CRM, contract generation, bookkeeping, and analytics",
+  "main": "server/server.js",
+  "scripts": {
+    "dev": "node server/server.js",
+    "db:init": "node server/db/init.js"
+  },
+  "keywords": [
+    "business",
+    "crm",
+    "contracts",
+    "bookkeeping",
+    "analytics"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5"
+  }
+}
