@@ -12,12 +12,16 @@ The project aims to provide small to medium businesses with a comprehensive plat
 
 ## Tech Stack & Conventions
 
-- **Runtime**: Node.js
-- **Primary Language**: JavaScript (TypeScript may be used for type safety)
-- **Package Manager**: npm or yarn
-- **Build Tools**: Standard Node.js ecosystem tools (Webpack, Vite, or similar)
-- **Testing**: Jest or similar testing frameworks
-- **Linting**: ESLint for code quality
+> **Note**: The current codebase uses a Python entrypoint (`app.py`) and is run with Python as described in the README. The Node.js/JavaScript stack below describes the **target** architecture as the project evolves.
+
+- **Runtime (current)**: Python 3
+- **Runtime (target)**: Node.js
+- **Primary Language (current)**: Python
+- **Primary Language (target)**: JavaScript (TypeScript may be used for type safety)
+- **Package Manager (target)**: npm or yarn
+- **Build Tools (target)**: Standard Node.js ecosystem tools (Webpack, Vite, or similar)
+- **Testing**: Appropriate frameworks for each runtime (for example, `pytest` for Python, Jest for Node.js)
+- **Linting**: Appropriate tooling for each runtime (for example, `flake8`/`black` for Python, ESLint for Node.js code quality)
 
 ### Directory Structure
 
