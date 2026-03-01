@@ -65,6 +65,23 @@ http://localhost:3000
 
 The frontend will automatically load and connect to the backend API.
 
+### 5. Deploy to Vercel
+
+This repo includes a `vercel.json` configuration and a serverless entrypoint at `api/index.js`.
+
+```bash
+npm install -g vercel
+vercel
+```
+
+For production deployment:
+
+```bash
+vercel --prod
+```
+
+> Note: SQLite on Vercel is ephemeral. Data is stored in `/tmp/business.db` and may reset between invocations.
+
 ## Available Endpoints
 
 ### Health Check

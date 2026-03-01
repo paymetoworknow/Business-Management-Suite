@@ -7,8 +7,8 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const app = express();
 const DEFAULT_PORT = 3000;
 
 /**
@@ -36,23 +36,27 @@ function resolvePort(rawPort, defaultPort) {
   return parsedPort;
 }
 
-const PORT = resolvePort(process.env.PORT, DEFAULT_PORT);
-// Database setup
-const dbPath = path.join(__dirname, 'db', 'business.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error connecting to database:', err.message);
-    process.exit(1);
+/**
+ * Resolve database path for different runtimes.
+ * Vercel serverless runtime requires writing to /tmp.
+ *
+ * @returns {string} SQLite database file path.
+ */
+function resolveDatabasePath() {
+  if (process.env.VERCEL) {
+    return path.join('/tmp', 'business.db');
   }
-  console.log('Connected to SQLite database');
-  ensureDatabaseSchema();
-});
+
+  return path.join(__dirname, 'db', 'business.db');
+}
 
 /**
  * Ensure the required database schema exists.
  * This creates the ping_log table if it does not already exist.
+ *
+ * @param {sqlite3.Database} db - SQLite database connection.
  */
-function ensureDatabaseSchema() {
+function ensureDatabaseSchema(db) {
   db.serialize(() => {
     db.run(
       `CREATE TABLE IF NOT EXISTS ping_log (
@@ -63,105 +67,132 @@ function ensureDatabaseSchema() {
         if (schemaErr) {
           console.error('Error ensuring database schema:', schemaErr.message);
           console.error(schemaErr.stack);
-          process.exit(1);
         }
-        console.log('Database schema verified');
       }
     );
   });
 }
-// Middleware
-app.use(express.json());
-// CORS configuration - allows all origins for development
-// TODO: In production, restrict to specific origins
-app.use(cors({
-  origin: '*', // Allow all origins for development
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type']
-}));
 
-// Serve static files from client directory
-app.use(express.static(path.join(__dirname, '..', 'client')));
+/**
+ * Create and configure the Express app.
+ *
+ * @returns {{ app: import('express').Express, db: sqlite3.Database }}
+ */
+function createApp() {
+  const app = express();
+  const dbPath = resolveDatabasePath();
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
-});
+  // Ensure parent directory exists when running locally.
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
-// GET /ping - Get ping statistics
-app.get('/ping', (req, res) => {
-  // Get total count
-  db.get('SELECT COUNT(*) as count FROM ping_log', (err, countRow) => {
+  const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-      console.error('Error getting ping count:', err.message);
-      console.error(err.stack);
-      return res.status(500).json({ error: 'Database error' });
+      console.error('Error connecting to database:', err.message);
+      return;
     }
+    console.log(`Connected to SQLite database at ${dbPath}`);
+    ensureDatabaseSchema(db);
+  });
 
-    // Get last ping time
-    db.get('SELECT id, created_at FROM ping_log ORDER BY id DESC LIMIT 1', (err, lastRow) => {
+  // Middleware
+  app.use(express.json());
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+  }));
+
+  // Serve static files from client directory
+  app.use(express.static(path.join(__dirname, '..', 'client')));
+
+  // Health check endpoint
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // GET /ping - Get ping statistics
+  app.get('/ping', (req, res) => {
+    db.get('SELECT COUNT(*) as count FROM ping_log', (err, countRow) => {
       if (err) {
-        console.error('Error getting last ping:', err.message);
+        console.error('Error getting ping count:', err.message);
         console.error(err.stack);
         return res.status(500).json({ error: 'Database error' });
       }
 
-      res.json({
-        count: countRow.count,
-        lastPing: lastRow ? {
-          id: lastRow.id,
-          timestamp: lastRow.created_at
-        } : null
+      db.get('SELECT id, created_at FROM ping_log ORDER BY id DESC LIMIT 1', (lastErr, lastRow) => {
+        if (lastErr) {
+          console.error('Error getting last ping:', lastErr.message);
+          console.error(lastErr.stack);
+          return res.status(500).json({ error: 'Database error' });
+        }
+
+        res.json({
+          count: countRow.count,
+          lastPing: lastRow
+            ? {
+              id: lastRow.id,
+              timestamp: lastRow.created_at
+            }
+            : null
+        });
       });
     });
   });
-});
 
-// POST /ping - Create a new ping entry
-app.post('/ping', (req, res) => {
-  db.run('INSERT INTO ping_log (created_at) VALUES (CURRENT_TIMESTAMP)', function(err) {
-    if (err) {
-      console.error('Error inserting ping:', err.message);
-      console.error(err.stack);
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    // Get the inserted row
-    db.get('SELECT id, created_at FROM ping_log WHERE id = ?', [this.lastID], (err, row) => {
+  // POST /ping - Create a new ping entry
+  app.post('/ping', (req, res) => {
+    db.run('INSERT INTO ping_log (created_at) VALUES (CURRENT_TIMESTAMP)', function onInsert(err) {
       if (err) {
-        console.error('Error retrieving inserted ping:', err.message);
+        console.error('Error inserting ping:', err.message);
         console.error(err.stack);
         return res.status(500).json({ error: 'Database error' });
       }
 
-      res.json({
-        id: row.id,
-        timestamp: row.created_at
+      db.get('SELECT id, created_at FROM ping_log WHERE id = ?', [this.lastID], (getErr, row) => {
+        if (getErr) {
+          console.error('Error retrieving inserted ping:', getErr.message);
+          console.error(getErr.stack);
+          return res.status(500).json({ error: 'Database error' });
+        }
+
+        return res.json({
+          id: row.id,
+          timestamp: row.created_at
+        });
       });
     });
   });
-});
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Business Management Suite server running on http://localhost:${PORT}`);
-  console.log('Available endpoints:');
-  console.log('  GET  /health - Health check');
-  console.log('  GET  /ping   - Get ping statistics');
-  console.log('  POST /ping   - Create new ping entry');
-});
+  return { app, db };
+}
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\nShutting down server...');
-  db.close((err) => {
-    if (err) {
-      console.error('Error closing database:', err.message);
-    }
-    console.log('Database connection closed');
-    process.exit(0);
+const { app, db } = createApp();
+
+if (require.main === module) {
+  const PORT = resolvePort(process.env.PORT, DEFAULT_PORT);
+
+  app.listen(PORT, () => {
+    console.log(`Business Management Suite server running on http://localhost:${PORT}`);
+    console.log('Available endpoints:');
+    console.log('  GET  /health - Health check');
+    console.log('  GET  /ping   - Get ping statistics');
+    console.log('  POST /ping   - Create new ping entry');
   });
-});
+
+  // Graceful shutdown for local development.
+  process.on('SIGINT', () => {
+    console.log('\nShutting down server...');
+    db.close((err) => {
+      if (err) {
+        console.error('Error closing database:', err.message);
+      }
+      console.log('Database connection closed');
+      process.exit(0);
+    });
+  });
+}
+
+module.exports = app;
